@@ -41,5 +41,45 @@ add_filter('gform_form_post_get_meta_' . SYNDAL_TOUR_FORM, function($form){
             $field->placeholder = trim(str_ireplace('(optional)', '', $field->placeholder));
         }
     }
-    return $form;
+    return syndal_tour_add_child_field($form);
 });
+
+/**
+ * "Child's name" (required) plus a "We're expecting" box that hides it for families still expecting. Added at runtime like the tracking fields, so nothing
+ * is saved to the form in the database. Used to match a tour booking to the Xplor enrolment even when the other
+ * parent enrols or uses a different email. Placed straight after the Mobile/phone field.
+ */
+const SYNDAL_TOUR_CHILD_FIELD     = 950;
+const SYNDAL_TOUR_EXPECTING_FIELD = 951;
+
+function syndal_tour_add_child_field($form){
+    if (!class_exists('GF_Fields')) { return $form; }
+    $after = null;
+    foreach ($form['fields'] as $i => $f) {
+        if (!is_object($f)) { continue; }
+        if ((int) $f->id === SYNDAL_TOUR_CHILD_FIELD || (int) $f->id === SYNDAL_TOUR_EXPECTING_FIELD || stripos((string) $f->label, 'child') !== false) {
+            return $form;   // already there (or a real child field was added in the editor)
+        }
+        if ($f->type === 'phone' || stripos((string) $f->label, 'mobile') !== false) { $after = $i; }
+        if ($after === null && $f->type === 'email') { $after = $i; }
+    }
+    // Required, but hidden (and so not required) when the "We're expecting" box is ticked.
+    $child = GF_Fields::create([
+        'type' => 'text', 'id' => SYNDAL_TOUR_CHILD_FIELD, 'formId' => SYNDAL_TOUR_FORM,
+        'label' => "Child's name", 'isRequired' => true, 'maxLength' => 80, 'autocomplete' => 'off',
+        'conditionalLogic' => [
+            'actionType' => 'show', 'logicType' => 'all',
+            'rules' => [['fieldId' => (string) SYNDAL_TOUR_EXPECTING_FIELD, 'operator' => 'isnot', 'value' => 'Expecting']],
+        ],
+    ]);
+    $expecting = GF_Fields::create([
+        'type' => 'checkbox', 'id' => SYNDAL_TOUR_EXPECTING_FIELD, 'formId' => SYNDAL_TOUR_FORM,
+        'label' => 'Expecting', 'labelPlacement' => 'hidden_label', 'isRequired' => false,
+        'conditionalLogicFields' => [SYNDAL_TOUR_CHILD_FIELD],   // tells Gravity Forms to re-check the name field on click
+        'choices' => [['text' => "We're expecting (baby not born yet)", 'value' => 'Expecting']],
+        'inputs'  => [['id' => SYNDAL_TOUR_EXPECTING_FIELD . '.1', 'label' => "We're expecting (baby not born yet)"]],
+    ]);
+    $pos = $after === null ? count($form['fields']) : $after + 1;
+    array_splice($form['fields'], $pos, 0, [$child, $expecting]);
+    return $form;
+}
