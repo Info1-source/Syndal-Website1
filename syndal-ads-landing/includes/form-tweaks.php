@@ -83,3 +83,36 @@ function syndal_tour_add_child_field($form){
     array_splice($form['fields'], $pos, 0, [$child, $expecting]);
     return $form;
 }
+
+/**
+ * Parent confirmation email ("Submission acknowledgement", the notification sent to the parent's email field).
+ * Wording approved by Mani on 20 Oct 2026. Kept in code so it deploys with WP Pusher; sender settings are unchanged.
+ * Merge tags: 6 = Full name, 8 = Tour date, 11 = Tour time.
+ */
+add_filter('gform_notification_' . SYNDAL_TOUR_FORM, function($notification, $form, $entry){
+    $is_parent = rgar($notification, 'toType') === 'field' || stripos((string) rgar($notification, 'name'), 'acknowledg') !== false;
+    if (!$is_parent) { return $notification; }
+
+    $notification['subject'] = 'Your tour at Syndal Childcare is booked – {Tour date:8}, {Tour time:11}';
+    $notification['disableAutoformat'] = true;
+    // "Just reply to this email" must reach the centre, whatever the sender address is.
+    if (trim((string) rgar($notification, 'replyTo')) === '') { $notification['replyTo'] = 'info1@syndalchildcare.com'; }
+    $notification['message'] =
+        '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#24263A;max-width:560px">'
+      . '<p>Hi {Full name:6},</p>'
+      . '<p>Thanks for booking a tour of Syndal Childcare &amp; ELC. We’re looking forward to meeting you.</p>'
+      . '<p style="margin:20px 0 4px;font-weight:bold">Your tour</p>'
+      . '<p style="margin:0">📅 {Tour date:8} at {Tour time:11}<br>📍 6 Huxtable St, Mount Waverley VIC 3149</p>'
+      . '<p style="margin:20px 0 4px;font-weight:bold">What to expect</p>'
+      . '<ul style="margin:0;padding-left:20px">'
+      . '<li>A relaxed 15–20 minute visit. See our rooms, meet our educators, and ask anything you like.</li>'
+      . '<li>Children are very welcome to come along.</li>'
+      . '<li>It’s free, with no obligation to enrol.</li>'
+      . '</ul>'
+      . '<p style="margin-top:20px"><strong>Need to change your time?</strong> Just reply to this email or call us on '
+      . '<a href="tel:0398027453" style="color:#2F7DF6">(03) 9802 7453</a>.</p>'
+      . '<p style="margin-top:20px">See you soon,<br>The Syndal Childcare team<br>'
+      . '<a href="https://syndalchildcare.com" style="color:#2F7DF6">syndalchildcare.com</a></p>'
+      . '</div>';
+    return $notification;
+}, 20, 3);
