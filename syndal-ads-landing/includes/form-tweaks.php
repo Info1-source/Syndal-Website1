@@ -116,3 +116,57 @@ add_filter('gform_notification_' . SYNDAL_TOUR_FORM, function($notification, $fo
       . '</div>';
     return $notification;
 }, 20, 3);
+
+/**
+ * After-tour follow-up: a button in the STAFF notification that opens a ready-written Gmail draft (info1@) to the parent
+ * with the Xplor enrolment form, Xplor waiting list and parent handbook links (Mani, 20 Oct 2026). Gmail adds her own signature. Nothing sends automatically.
+ * Fields: 6 = Full name, 3 = Email, 950 = Child's name.
+ */
+const SYNDAL_XPLOR_ENROL_URL    = 'https://prodadmin.myxplor.com/enrollment_v2/centre/qyTCY47JXdXdivzaJH1b24356A';
+const SYNDAL_XPLOR_WAITLIST_URL = 'https://prodadmin.myxplor.com/enrollment/index/cXlUQ1k0N0pYZFhkaXZ6YUpIMWIvQT09';
+const SYNDAL_CENTRE_INBOX       = 'info1@syndalchildcare.com';
+
+function syndal_followup_email($entry){
+    $first = trim((string) (preg_split('/\s+/', trim((string) rgar($entry, '6')))[0] ?? ''));
+    $child = trim((string) (preg_split('/\s+/', trim((string) rgar($entry, (string) SYNDAL_TOUR_CHILD_FIELD)))[0] ?? ''));
+    $subject = 'Thank you for visiting Syndal Childcare & ELC – next steps';
+    $body = 'Dear ' . ($first !== '' ? $first : 'there') . ",\n\n"
+          . 'Thank you for visiting our centre. It was lovely to meet you' . ($child !== '' ? " and {$child}" : '') . ".\n\n"
+          . "Here are the links you'll need:\n\n"
+          . "Enrolment form (if we've offered you a place):\n" . SYNDAL_XPLOR_ENROL_URL . "\n\n"
+          . "Waiting list (if you'd like a place and haven't registered yet), with your preferred days and start date:\n" . SYNDAL_XPLOR_WAITLIST_URL . "\n\n"
+          . "Parent handbook:\nhttps://syndalchildcare.com/parents-hand-book/\n\n"
+          . "For the enrolment form, it helps to have your child's birth certificate and Immunisation History Statement ready to attach. "
+          . "Enrolment needs to be completed before orientation: three free 1-hour sessions with your child before their first day. "
+          . "Please make sure your Child Care Subsidy is set up in myGov before your child starts.\n\n"
+          . "New enrolments currently receive \$50 off the first gap fee (terms: syndalchildcare.com/fees/).\n\n"
+          . "If you have any questions, just reply to this email or call us on (03) 9802 7453.\n\n"
+          . "Kind regards,\n";
+    return [$subject, $body];
+}
+
+function syndal_followup_links($to, $subject, $body){
+    $gmail = 'https://mail.google.com/mail/?' . http_build_query([
+        'view' => 'cm', 'fs' => '1', 'authuser' => SYNDAL_CENTRE_INBOX, 'to' => $to, 'su' => $subject, 'body' => $body,
+    ], '', '&', PHP_QUERY_RFC3986);
+    $mailto = 'mailto:' . rawurlencode($to) . '?subject=' . rawurlencode($subject) . '&body=' . rawurlencode($body);
+    return [$gmail, $mailto];
+}
+
+add_filter('gform_notification_' . SYNDAL_TOUR_FORM, function($notification, $form, $entry){
+    if (rgar($notification, 'toType') === 'field' || stripos((string) rgar($notification, 'name'), 'acknowledg') !== false) {
+        return $notification;   // parent email: leave alone
+    }
+    $to = sanitize_email((string) rgar($entry, '3'));
+    if ($to === '') { return $notification; }
+    [$subject, $body] = syndal_followup_email($entry);
+    [$gmail, $mailto] = syndal_followup_links($to, $subject, $body);
+    $block = '<div style="margin-top:24px;padding:14px;border:1px solid #F28C28;border-radius:6px;font-family:Arial,sans-serif;font-size:14px">'
+           . '<p style="margin:0 0 8px;font-weight:bold">After the tour</p>'
+           . '<p style="margin:0 0 12px;color:#555">Opens a ready-written email to this family in Gmail with the enrolment form, waiting list and parent handbook links. Check it, then send.</p>'
+           . '<a href="' . esc_url($gmail) . '" style="display:inline-block;background:#2F7DF6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:6px;font-weight:bold">✉️ Send follow-up email (Gmail)</a>'
+           . '<p style="margin:10px 0 0;font-size:12px"><a href="' . esc_url($mailto, ['mailto']) . '" style="color:#555">or open in your email app</a></p>'
+           . '</div>';
+    $notification['message'] = (string) rgar($notification, 'message') . "\n" . $block;
+    return $notification;
+}, 30, 3);
