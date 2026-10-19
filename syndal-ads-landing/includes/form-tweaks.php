@@ -93,13 +93,15 @@ add_filter('gform_notification_' . SYNDAL_TOUR_FORM, function($notification, $fo
     $is_parent = rgar($notification, 'toType') === 'field' || stripos((string) rgar($notification, 'name'), 'acknowledg') !== false;
     if (!$is_parent) { return $notification; }
 
+    // First name only (the form has one Full name box).
+    $first = trim((string) (preg_split('/\s+/', trim((string) rgar($entry, '6')))[0] ?? ''));
     $notification['subject'] = 'Your tour at Syndal Childcare is booked – {Tour date:8}, {Tour time:11}';
     $notification['disableAutoformat'] = true;
     // "Just reply to this email" must reach the centre, whatever the sender address is.
     if (trim((string) rgar($notification, 'replyTo')) === '') { $notification['replyTo'] = 'info1@syndalchildcare.com'; }
     $notification['message'] =
         '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#24263A;max-width:560px">'
-      . '<p>Hi {Full name:6},</p>'
+      . '<p>Hi ' . esc_html($first !== '' ? $first : 'there') . ',</p>'
       . '<p>Thanks for booking a tour of Syndal Childcare &amp; ELC. We’re looking forward to meeting you.</p>'
       . '<p style="margin:20px 0 4px;font-weight:bold">Your tour</p>'
       . '<p style="margin:0">📅 {Tour date:8} at {Tour time:11}<br>📍 6 Huxtable St, Mount Waverley VIC 3149</p>'
