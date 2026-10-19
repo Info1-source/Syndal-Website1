@@ -198,7 +198,9 @@ add_filter('gform_notification_' . SYNDAL_TOUR_FORM, function($notification, $fo
  */
 function syndal_tour_calendar_subject($form, $entry){
     $raw_date = trim((string) rgar($entry, '8'));
-    $ts       = $raw_date !== '' ? strtotime($raw_date . ' 12:00') : false;
+    $ts       = false;
+    if (preg_match('#^(\d{4})-(\d{1,2})-(\d{1,2})$#', $raw_date, $m))        { $ts = mktime(12, 0, 0, (int) $m[2], (int) $m[3], (int) $m[1]); }   // Y-m-d (how Gravity Forms stores dates)
+    elseif (preg_match('#^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$#', $raw_date, $m)) { $ts = mktime(12, 0, 0, (int) $m[2], (int) $m[1], (int) $m[3]); }   // d/m/Y (Australian display)
     $date     = $ts ? date('D j M Y', $ts) : $raw_date;
     $time     = trim((string) rgar($entry, '11'));
     $name     = trim((string) rgar($entry, '6'));
