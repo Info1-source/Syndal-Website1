@@ -208,7 +208,7 @@ function syndal_tour_calendar_subject($form, $entry){
     $expect   = trim((string) rgar($entry, '951.1')) !== '';
     $phone    = '';
     foreach ((array) rgar($form, 'fields') as $f) {
-        if (is_object($f) && $f->type === 'phone') { $phone = preg_replace('/[^\d+]/', '', (string) rgar($entry, (string) $f->id)); break; }
+        if (is_object($f) && ($f->type === 'phone' || preg_match('/mobile|phone/i', (string) $f->label))) { $phone = preg_replace('/[^\d+]/', '', (string) rgar($entry, (string) $f->id)); break; }
     }
     $who = $name !== '' ? $name : 'New family';
     if ($child !== '')  { $who .= ' (child: ' . $child . ')'; }
