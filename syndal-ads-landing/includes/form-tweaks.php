@@ -147,6 +147,7 @@ function syndal_followup_email($entry){
     return [$subject, $body];
 }
 
+// Escaped with esc_attr, not esc_url: esc_url strips the %0A line breaks from the draft.
 function syndal_followup_links($to, $subject, $body){
     $gmail = 'https://mail.google.com/mail/?' . http_build_query([
         'view' => 'cm', 'fs' => '1', 'authuser' => SYNDAL_CENTRE_INBOX, 'to' => $to, 'su' => $subject, 'body' => $body,
@@ -166,8 +167,8 @@ add_filter('gform_notification_' . SYNDAL_TOUR_FORM, function($notification, $fo
     $block = '<div style="margin-top:24px;padding:14px;border:1px solid #F28C28;border-radius:6px;font-family:Arial,sans-serif;font-size:14px">'
            . '<p style="margin:0 0 8px;font-weight:bold">After the tour</p>'
            . '<p style="margin:0 0 12px;color:#555">Opens a ready-written email to this family in Gmail with the enrolment form, waiting list and parent handbook links. Check it, then send.</p>'
-           . '<a href="' . esc_url($gmail) . '" style="display:inline-block;background:#2F7DF6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:6px;font-weight:bold">✉️ Send follow-up email (Gmail)</a>'
-           . '<p style="margin:10px 0 0;font-size:12px"><a href="' . esc_url($mailto, ['mailto']) . '" style="color:#555">or open in your email app</a></p>'
+           . '<a href="' . esc_attr($gmail) . '" style="display:inline-block;background:#2F7DF6;color:#fff;text-decoration:none;padding:10px 16px;border-radius:6px;font-weight:bold">✉️ Send follow-up email (Gmail)</a>'
+           . '<p style="margin:10px 0 0;font-size:12px"><a href="' . esc_attr($mailto) . '" style="color:#555">or open in your email app</a></p>'
            . '</div>';
     $notification['message'] = (string) rgar($notification, 'message') . "\n" . $block;
     return $notification;
