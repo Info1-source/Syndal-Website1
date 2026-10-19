@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Syndal Ads Landing
- * Description: Google Ads landing-page support — search-matched headlines on /visit-syndal/?kw=…, the $50 first-gap-fee offer on /fees/, /kinder/ and /visit-syndal/, and the SYNDAL CHILDCARE site icon. Deployed with WP Pusher.
- * Version: 1.0.0
+ * Description: Google Ads landing-page support — search-matched headlines on /visit-syndal/?kw=…, the $50 first-gap-fee offer on /kinder/ and /visit-syndal/, and the SYNDAL CHILDCARE site icon. Deployed with WP Pusher.
+ * Version: 1.0.1
  * Author: Syndal Childcare & ELC
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -66,12 +66,7 @@ function syndal_offer_card($heading, $text, $button = true){
 }
 
 add_filter('the_content', function($c){
-    if (is_page('fees')) {
-        $card = syndal_offer_card('Enrol and get <span>$50 off</span> your first gap fee',
-            'Use the calculator to see your gap fee, then book a free tour. If Syndal feels right, $50 comes off your first gap fee.');
-        $at = strpos($c, '<div class="wp-block-group syn-sec syn-included');
-        return $at === false ? $card . $c : substr($c, 0, $at) . '<div class="syn-offer-wrap">' . $card . '</div>' . substr($c, $at);
-    }
+    // /fees/ offer card removed 2026-10-20 at Mani's request.
     if (is_page('kinder')) {
         $card = syndal_offer_card('Joining long day care? Get <span>$50 off</span> your first gap fee',
             'Free Sessional Kinder is already free. If your child joins our long day care, integrated kinder or before and after kinder care, $50 comes off your first gap fee.');
@@ -89,7 +84,7 @@ add_filter('the_content', function($c){
 }, 20);
 
 add_action('wp_head', function(){
-    if (!is_page(['fees', 'kinder', 'visit-syndal'])) { return; }
+    if (!is_page(['kinder', 'visit-syndal'])) { return; }
     echo '<style id="syndal-offer">
 .syn-ads-h1-sub{display:block;margin-top:.45em;font-size:.5em;line-height:1.25;font-weight:500;color:var(--syn-ink,inherit);opacity:.85}
 .syn-offer-wrap{--syn-offer-bg:#E7F0FF;background:var(--syn-offer-bg);box-shadow:0 0 0 100vmax var(--syn-offer-bg);clip-path:inset(0 -100vmax);padding:0 0 56px;margin-top:0!important;margin-bottom:0!important}
