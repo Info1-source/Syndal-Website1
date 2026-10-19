@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Syndal Ads Landing
  * Description: Google Ads landing-page support — search-matched headlines on /visit-syndal/?kw=…, the $50 first-gap-fee offer on /fees/, /kinder/ and /visit-syndal/, and the SYNDAL CHILDCARE site icon. Deployed with WP Pusher.
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Syndal Childcare & ELC
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -51,8 +51,9 @@ add_filter('the_content', function($content){
     $kw  = sanitize_key(wp_unslash($_GET['kw']));
     if (!isset($map[$kw])) { return $content; }
     [$h1, $lead] = $map[$kw];
-    $content = preg_replace('#(<h1 id="syn-ads-title">).*?(</h1>)#s', '${1}' . $h1 . '${2}', $content, 1);
-    return preg_replace('#(<p class="syn-ads-lead">).*?(</p>)#s', '${1}' . esc_html($lead) . '${2}', $content, 1);
+    $h1 .= '<span class="syn-ads-h1-offer">Enrol now and get $50 off your first gap fee.</span>';
+    $content = preg_replace_callback('#(<h1 id="syn-ads-title">).*?(</h1>)#s', function($m) use ($h1){ return $m[1] . $h1 . $m[2]; }, $content, 1);
+    return preg_replace_callback('#(<p class="syn-ads-lead">).*?(</p>)#s', function($m) use ($lead){ return $m[1] . esc_html($lead) . $m[2]; }, $content, 1);
 }, 20);
 
 // $50 enrolment offer (Google requires an ad's offer to appear on its landing page). Deactivate the plugin to end it.
@@ -91,6 +92,7 @@ add_filter('the_content', function($c){
 add_action('wp_head', function(){
     if (!is_page(['fees', 'kinder', 'visit-syndal'])) { return; }
     echo '<style id="syndal-offer">
+.syn-ads-h1-offer{display:block;margin-top:.5em;font-size:.4em;line-height:1.3;font-weight:700;color:#B85A00}
 .syn-ads-h1-sub{display:block;margin-top:.45em;font-size:.5em;line-height:1.25;font-weight:500;color:var(--syn-ink,inherit);opacity:.85}
 .syn-offer-wrap{--syn-offer-bg:#E7F0FF;background:var(--syn-offer-bg);box-shadow:0 0 0 100vmax var(--syn-offer-bg);clip-path:inset(0 -100vmax);padding:0 0 56px;margin-top:0!important;margin-bottom:0!important}
 .syn-offer-wrap-kinder{--syn-offer-bg:#FFFBF5}
