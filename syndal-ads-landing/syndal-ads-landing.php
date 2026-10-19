@@ -1,13 +1,16 @@
 <?php
 /**
  * Plugin Name: Syndal Ads Landing
- * Description: Google Ads landing-page support — search-matched headlines on /visit-syndal/?kw=…, the $50 first-gap-fee offer on /fees/, /kinder/ and /visit-syndal/, and the SYNDAL CHILDCARE site icon. Deployed with WP Pusher.
- * Version: 1.0.4
+ * Description: Google Ads landing-page support — search-matched headlines on /visit-syndal/?kw=…, the $50 first-gap-fee offer on /fees/, /kinder/ and /visit-syndal/, the SYNDAL CHILDCARE site icon, and Google Ads click tracking on the Book a Tour form. Deployed with WP Pusher.
+ * Version: 1.0.5
  * Author: Syndal Childcare & ELC
  * Requires at least: 6.0
  * Requires PHP: 7.4
  */
 if (!defined('ABSPATH')) { exit; }
+
+// Step 5 profit tracking: gclid + keyword from ad click -> Book a Tour form 2 -> staff email. Added 2026-10-20.
+require_once __DIR__ . '/includes/tracking.php';
 
 // Site icon (favicon / Google result icon): serve the plugin's SYNDAL CHILDCARE icon at every size WordPress asks for.
 add_filter('get_site_icon_url', function($url, $size){
