@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Syndal Ads Landing
  * Description: Google Ads landing-page support — search-matched headlines on /visit-syndal/?kw=…, the $50 first-gap-fee offer on /fees/, /kinder/ and /visit-syndal/, the SYNDAL CHILDCARE site icon, and Google Ads click tracking on the Book a Tour form. Deployed with WP Pusher.
- * Version: 1.0.13
+ * Version: 1.0.14
  * Author: Syndal Childcare & ELC
  * Requires at least: 6.0
  * Requires PHP: 7.4

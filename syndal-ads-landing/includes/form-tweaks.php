@@ -172,3 +172,18 @@ add_filter('gform_notification_' . SYNDAL_TOUR_FORM, function($notification, $fo
     $notification['message'] = (string) rgar($notification, 'message') . "\n" . $block;
     return $notification;
 }, 30, 3);
+
+/**
+ * Staff booking email ("Admin Notification") always goes to the centre inbox info1@ as well (Mani, 20 Oct 2026),
+ * so the "After the tour" follow-up button lands where staff work. Whoever else is set in "Send To" still gets it.
+ */
+add_filter('gform_notification_' . SYNDAL_TOUR_FORM, function($notification, $form, $entry){
+    if (rgar($notification, 'toType') === 'field' || stripos((string) rgar($notification, 'name'), 'acknowledg') !== false) {
+        return $notification;   // parent email: leave alone
+    }
+    $to = trim((string) rgar($notification, 'to'));
+    if (stripos($to, SYNDAL_CENTRE_INBOX) === false) {
+        $notification['to'] = $to === '' ? SYNDAL_CENTRE_INBOX : $to . ',' . SYNDAL_CENTRE_INBOX;
+    }
+    return $notification;
+}, 5, 3);
