@@ -113,8 +113,9 @@ add_filter('gform_notification_' . SYNDAL_TOUR_FORM, function($notification, $fo
       . '</ul>'
       . '<p style="margin-top:20px"><strong>Need to change your time?</strong> Just reply to this email or call us on '
       . '<a href="tel:0398027453" style="color:#2F7DF6">(03) 9802 7453</a>.</p>'
-      . '<p style="margin-top:20px">See you soon,<br>The Syndal Childcare team<br>'
-      . '<a href="https://syndalchildcare.com" style="color:#2F7DF6">syndalchildcare.com</a></p>'
+      . '<p style="margin-top:20px">See you soon,<br>Syndal Childcare &amp; ELC</p>'
+      . '<p style="margin:12px 0 0"><img src="' . esc_url(plugins_url('assets/logo-email.png', dirname(__FILE__))) . '" '
+      . 'alt="Syndal Childcare &amp; ELC" width="160" height="65" style="display:block;border:0;width:160px;height:auto"></p>'
       . '</div>';
     return $notification;
 }, 20, 3);
@@ -142,7 +143,7 @@ function syndal_followup_email($entry){
           . "Please make sure your Child Care Subsidy is set up in myGov before your child starts.\n\n"
           . "New enrolments currently receive \$50 off the first gap fee (terms: syndalchildcare.com/fees/).\n\n"
           . "If you have any questions, just reply to this email or call us on (03) 9802 7453.\n\n"
-          . "Kind regards,\nThe Syndal Childcare team\nSyndal Childcare & ELC\n6 Huxtable St, Mount Waverley VIC 3149\n(03) 9802 7453\n";
+          . "Kind regards,\nSyndal Childcare & ELC\n";
     return [$subject, $body];
 }
 
