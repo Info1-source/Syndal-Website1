@@ -1,0 +1,96 @@
+<div class="syn-calc" id="synCalc">
+  <div class="syn-calc-in">
+    <div class="syn-calc-tabs" role="tablist">
+      <button type="button" class="on" data-mode="ldc" role="tab">Long day care / Integrated kinder</button>
+      <button type="button" data-mode="ses" role="tab">Free sessional kinder + extra care</button>
+    </div>
+    <label class="syn-f"><span>Combined family income (per year)</span>
+      <div class="syn-money"><b>$</b><input type="text" inputmode="numeric" id="scIncome" value="120,000" aria-label="Combined family income"></div>
+      <input type="range" id="scIncomeR" min="0" max="560000" step="1000" value="120000" aria-label="Income slider">
+    </label>
+    <div class="syn-f" data-show="ldc"><span>Days per week</span>
+      <div class="syn-pills" id="scDays"><button type="button">1</button><button type="button">2</button><button type="button" class="on">3</button><button type="button">4</button><button type="button">5</button></div>
+    </div>
+    <div class="syn-f" data-show="ses" hidden><span>Before-kinder care (7:00–8:30) · days per week</span>
+      <div class="syn-pills" id="scBefore"><button type="button" class="on">0</button><button type="button">1</button><button type="button">2</button></div>
+    </div>
+    <div class="syn-f" data-show="ses" hidden><span>After-kinder care (4:00–6:00) · days per week</span>
+      <div class="syn-pills" id="scAfter"><button type="button" class="on">0</button><button type="button">1</button><button type="button">2</button></div>
+    </div>
+    <label class="syn-chk"><input type="checkbox" id="sc100"><span>Each parent works, studies or volunteers <b>48+ hours a fortnight</b> (up to 100 subsidised hours instead of 72)</span></label>
+    <label class="syn-chk" data-show="ldc"><input type="checkbox" id="scKinder"><span>My child is in our <b>3- or 4-year-old kinder program</b> (Free Kinder offset applies)</span></label>
+  </div>
+  <div class="syn-calc-out" aria-live="polite">
+    <div class="syn-rate"><span>Your estimated CCS rate</span><strong id="scRate">90%</strong></div>
+    <div class="syn-big"><span id="scBigLbl">Your estimated gap per day</span><strong id="scDay">$0.00</strong><em id="scFull">Full fee $155.00/day</em></div>
+    <div class="syn-rows">
+      <div><span>Per week</span><b id="scWeek">$0</b></div>
+      <div><span>Per fortnight</span><b id="scFn">$0</b></div>
+      <div><span>Government pays (fortnight)</span><b id="scGov">$0</b></div>
+    </div>
+    <p class="syn-calc-note" id="scNote"></p>
+    <a class="syn-calc-cta" href="/book-a-tour/">Book a tour →</a>
+  </div>
+</div>
+<p class="syn-calc-disc">This is an estimate only, based on 2026–27 CCS rates (from 6 July 2026) and Syndal’s current fees. It assumes one child under school age and pre-booked sessions. Your actual subsidy is determined by Services Australia; by default 5% of CCS is withheld until end-of-year balancing. Families with more than one child aged 5 or under may receive a higher rate for younger children.</p>
+<script>
+(function(){
+  /* ===== UPDATE THESE EACH YEAR ===== */
+  var C={
+    dayFee:155, dayHours:11,                 // 7:00am-6:00pm
+    hourCap:15.19,                           // CBDC under school age, 2026-27
+    lowThr:88520, maxRate:90, step:5000, cutOff:538520,
+    hours72:72, hours100:100,                // 3 Day Guarantee (per fortnight)
+    kinderOffsetFn:80.81,                    // Free Kinder offset per fortnight ($2,101/yr)
+    before:{fee:23.25,hours:1.5}, after:{fee:31.00,hours:2}
+  };
+  var $=function(id){return document.getElementById(id)}, root=$('synCalc'); if(!root) return;
+  var mode='ldc';
+  function money(n,d){return '$'+n.toLocaleString('en-AU',{minimumFractionDigits:d==null?2:d,maximumFractionDigits:d==null?2:d})}
+  function rate(inc){ if(inc<=C.lowThr) return C.maxRate; return Math.max(0, C.maxRate-Math.ceil((inc-C.lowThr)/C.step)); }
+  function pill(id){var b=root.querySelector('#'+id+' .on');return b?+b.textContent:0}
+  function income(){return +($('scIncome').value.replace(/[^0-9]/g,''))||0}
+  function calc(){
+    var inc=income(), r=rate(inc)/100, cap100=$('sc100').checked?C.hours100:C.hours72, fee, hrs, sub, gov, gap, days;
+    $('scRate').textContent=Math.round(r*100)+'%';
+    if(mode==='ldc'){
+      days=pill('scDays'); fee=days*2*C.dayFee; hrs=days*2*C.dayHours;
+      var hourly=Math.min(C.dayFee/C.dayHours,C.hourCap);
+      sub=Math.min(hrs,cap100); gov=sub*hourly*r;
+      var off=$('scKinder').checked?C.kinderOffsetFn:0;
+      gap=Math.max(0,fee-gov-off);
+      $('scBigLbl').textContent='Your estimated gap per day';
+      $('scDay').textContent=money(gap/(days*2));
+      $('scFull').textContent='Full fee '+money(C.dayFee)+'/day';
+      $('scGov').textContent=money(gov+off);
+      var n=[]; if(hrs>cap100) n.push('You’d book '+hrs+' hours a fortnight; only '+cap100+' are subsidised, so the extra hours are charged at the full fee.');
+      if(off) n.push('Includes the Free Kinder offset of about '+money(C.kinderOffsetFn)+' a fortnight.');
+      n.push('Our fee is '+money(C.dayFee/C.dayHours)+'/hour — under the '+money(C.hourCap)+' government cap, so CCS applies to the full fee.');
+      $('scNote').textContent=n.join(' ');
+    } else {
+      var b=pill('scBefore'), a=pill('scAfter');
+      fee=2*(b*C.before.fee+a*C.after.fee); hrs=2*(b*C.before.hours+a*C.after.hours);
+      var g=0; [[b,C.before],[a,C.after]].forEach(function(x){ g+=2*x[0]*Math.min(x[1].fee,x[1].hours*C.hourCap)*r; });
+      gov=g; gap=Math.max(0,fee-gov);
+      if(b||a){
+        $('scBigLbl').textContent='Your estimated extra care gap per week';
+        $('scDay').textContent=money(gap/2);
+        $('scFull').textContent='Kinder sessions (Mon & Wed 8:30–4:00) are free for eligible children';
+      } else {
+        $('scBigLbl').textContent='Kinder sessions (8:30–4:00)';
+        $('scDay').textContent='FREE';
+        $('scFull').textContent='No fee for eligible children';
+      }
+      $('scGov').textContent=money(gov);
+      $('scNote').textContent='Free Sessional Kinder runs Monday & Wednesday during Victorian school terms. Before-kinder care is '+money(C.before.fee)+' and after-kinder care '+money(C.after.fee)+' per session (pre-booked), with CCS applied.';
+    }
+    $('scWeek').textContent=money(gap/2); $('scFn').textContent=money(gap);
+  }
+  root.querySelectorAll('.syn-pills').forEach(function(g){g.addEventListener('click',function(e){if(e.target.tagName!=='BUTTON')return;g.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});e.target.classList.add('on');calc()})});
+  root.querySelectorAll('.syn-calc-tabs button').forEach(function(t){t.addEventListener('click',function(){mode=t.dataset.mode;root.querySelectorAll('.syn-calc-tabs button').forEach(function(x){x.classList.toggle('on',x===t)});root.querySelectorAll('[data-show]').forEach(function(el){el.hidden=el.dataset.show!==mode});calc()})});
+  $('scIncome').addEventListener('input',function(){var v=income();this.value=v?v.toLocaleString('en-AU'):'';$('scIncomeR').value=v;calc()});
+  $('scIncomeR').addEventListener('input',function(){$('scIncome').value=(+this.value).toLocaleString('en-AU');calc()});
+  ['sc100','scKinder'].forEach(function(id){$(id).addEventListener('change',calc)});
+  calc();
+})();
+</script>

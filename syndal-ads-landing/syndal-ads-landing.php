@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Syndal Ads Landing
  * Description: Google Ads landing-page support — search-matched headlines on /visit-syndal/?kw=…, the $50 first-gap-fee offer on /fees/, /kinder/ and /visit-syndal/, and the SYNDAL CHILDCARE site icon. Deployed with WP Pusher.
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: Syndal Childcare & ELC
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -54,6 +54,14 @@ add_filter('the_content', function($content){
     $h1 .= '<span class="syn-ads-h1-offer">Enrol now and get $50 off your first gap fee.</span>';
     $content = preg_replace_callback('#(<h1 id="syn-ads-title">).*?(</h1>)#s', function($m) use ($h1){ return $m[1] . $h1 . $m[2]; }, $content, 1);
     return preg_replace_callback('#(<p class="syn-ads-lead">).*?(</p>)#s', function($m) use ($lead){ return $m[1] . esc_html($lead) . $m[2]; }, $content, 1);
+}, 20);
+
+// Fee calculator (replaces the mu-plugin copy): extra care on the sessional kinder tab now shows its real gap instead of "FREE".
+add_action('init', function(){
+    add_shortcode('syndal_fee_calculator', function(){
+        $f = __DIR__ . '/assets/fee-calculator.html';
+        return file_exists($f) ? file_get_contents($f) : '';
+    });
 }, 20);
 
 // $50 enrolment offer (Google requires an ad's offer to appear on its landing page). Deactivate the plugin to end it.
