@@ -128,10 +128,9 @@ const SYNDAL_CENTRE_INBOX       = 'info1@syndalchildcare.com';
 
 function syndal_followup_email($entry){
     $first = trim((string) (preg_split('/\s+/', trim((string) rgar($entry, '6')))[0] ?? ''));
-    $child = trim((string) (preg_split('/\s+/', trim((string) rgar($entry, (string) SYNDAL_TOUR_CHILD_FIELD)))[0] ?? ''));
     $subject = 'Thank you for visiting Syndal Childcare & ELC – next steps';
     $body = 'Dear ' . ($first !== '' ? $first : 'there') . ",\n\n"
-          . 'Thank you for visiting our centre. It was lovely to meet you' . ($child !== '' ? " and {$child}" : '') . ".\n\n"
+          . "Thank you for visiting our centre. It was lovely to meet you.\n\n"
           . "Here are the links you'll need:\n\n"
           . "Enrolment form (if we've offered you a place):\n" . SYNDAL_XPLOR_ENROL_URL . "\n\n"
           . "Waiting list (if you'd like a place and haven't registered yet), with your preferred days and start date:\n" . SYNDAL_XPLOR_WAITLIST_URL . "\n\n"
@@ -141,7 +140,7 @@ function syndal_followup_email($entry){
           . "Please make sure your Child Care Subsidy is set up in myGov before your child starts.\n\n"
           . "New enrolments currently receive \$50 off the first gap fee (terms: syndalchildcare.com/fees/).\n\n"
           . "If you have any questions, just reply to this email or call us on (03) 9802 7453.\n\n"
-          . "Kind regards,\n";
+          . "Kind regards,\nThe Syndal Childcare team\nSyndal Childcare & ELC\n6 Huxtable St, Mount Waverley VIC 3149\n(03) 9802 7453\n";
     return [$subject, $body];
 }
 
